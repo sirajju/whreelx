@@ -8,7 +8,6 @@
 	import NavBar from '$lib/components/NavBar.svelte';
 	import PortfolioSection from '$lib/components/PortfolioSection.svelte';
 	import ServicesSection from '$lib/components/ServicesSection.svelte';
-	import SuccessModal from '$lib/components/SuccessModal.svelte';
 	import { projectIndex, projects } from '$lib/data/projects.js';
 
 	/** @typedef {import('$lib/data/projects.js').Project} Project */
@@ -60,7 +59,6 @@
 	let isMenuOpen = false;
 	/** @type {string | null} */
 	let selectedProjectId = null;
-	let showSuccessModal = false;
 	/** @type {Project[]} */
 	let filteredProjects = projects;
 	/** @type {Project | null} */
@@ -130,13 +128,6 @@
 		}
 	};
 
-	const handleContactSubmit = () => {
-		showSuccessModal = true;
-	};
-
-	const handleModalClose = () => {
-		showSuccessModal = false;
-	};
 </script>
 
 <svelte:head>
@@ -158,9 +149,7 @@
 			on:filterChange={handleFilterChange}
 			on:select={({ detail }) => openProject(detail.id)}
 		/>
-		<ContactSection on:submit={handleContactSubmit} />
+		<ContactSection />
 		<FooterSection />
 	</main>
 {/if}
-
-<SuccessModal open={showSuccessModal} on:close={handleModalClose} />
