@@ -1,8 +1,27 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 
-	export let project;
-	export let nextProject;
+	/**
+	 * @typedef {{ label: string; value: string }} Metric
+	 * @typedef {{ kind?: 'video' | 'image'; url?: string; poster?: string; captions?: string } | null | undefined} ProjectMedia
+	 * @typedef {{
+	 * 	id: string;
+	 * 	title: string;
+	 * 	category: string;
+	 * 	type: string;
+	 * 	client: string;
+	 * 	year: string;
+	 * 	services: string[];
+	 * 	description: string;
+	 * 	metrics: Metric[];
+	 * 	media?: ProjectMedia;
+	 * }} DisplayProject
+	 */
+
+	/** @type {DisplayProject | null} */
+	export let project = null;
+	/** @type {DisplayProject | null} */
+	export let nextProject = null;
 
 	const dispatch = createEventDispatcher();
 	$: nextTitle = nextProject?.title ?? 'Explore Portfolio';
@@ -40,8 +59,37 @@
 
 				<div class="mb-20 grid gap-12 lg:grid-cols-3">
 					<div class="space-y-8 lg:col-span-2">
-						<div class="flex aspect-video items-center justify-center rounded-2xl border border-white/5 bg-zinc-900">
-							<span class="font-mono text-zinc-600">[Hero Visual Placeholder: {project.title}]</span>
+						<div class="aspect-video overflow-hidden rounded-2xl border border-white/5 bg-zinc-900">
+							{#if project.media?.kind === 'video' && project.media.url}
+								<video
+									src={project.media.url}
+									class="h-full w-full bg-black object-cover"
+									controls
+									playsinline
+									preload="metadata"
+								>
+									{#if project.media.captions}
+										<track
+											src={project.media.captions}
+											kind="captions"
+											srclang="en"
+											label="English captions"
+											default
+										/>
+									{/if}
+									Sorry, your browser does not support embedded videos. Watch {project.title} instead.
+								</video>
+							{:else if project.media?.kind === 'image' && project.media.url}
+								<img
+									src={project.media.url}
+									alt={`${project.title} hero visual`}
+									class="h-full w-full object-cover"
+								/>
+							{:else}
+								<div class="flex aspect-video items-center justify-center">
+									<span class="font-mono text-zinc-600">[Hero Visual Placeholder: {project.title}]</span>
+								</div>
+							{/if}
 						</div>
 						<div class="prose prose-invert max-w-none">
 							<h3 class="mb-4 text-2xl font-bold">Project Brief</h3>
