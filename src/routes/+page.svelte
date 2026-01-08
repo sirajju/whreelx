@@ -9,28 +9,17 @@
 	import PortfolioSection from '$lib/components/PortfolioSection.svelte';
 	import ServicesSection from '$lib/components/ServicesSection.svelte';
 	import SuccessModal from '$lib/components/SuccessModal.svelte';
-	import { projects } from '$lib/data/projects.js';
+	import { projectIndex, projects } from '$lib/data/projects.js';
+
+	/** @typedef {import('$lib/data/projects.js').Project} Project */
 
 	/**
 	 * @typedef {{
 	 * 	label: string;
 	 * 	value: string;
 	 * }} FilterOption
-	 * @typedef {{ label: string; value: string }} Metric
 	 * @typedef {{ createIcons?: () => void }} LucideGlobal
 	 * @typedef {Window & typeof globalThis & { lucide?: LucideGlobal }} LucideWindow
-	 * @typedef {{
-	 * 	id: string;
-	 * 	title: string;
-	 * 	category: string;
-	 * 	type: string;
-	 * 	client: string;
-	 * 	year: string;
-	 * 	services: string[];
-	 * 	description: string;
-	 * 	metrics: Metric[];
-	 * 	nextId: string;
-	 * }} Project
 	 */
 
 	/** @type {FilterOption[]} */
@@ -109,8 +98,8 @@
 			? projects
 			: projects.filter((project) => project.type === activeFilter);
 
-	$: activeProject = projects.find((project) => project.id === selectedProjectId) ?? null;
-	$: nextProject = activeProject ? projects.find((project) => project.id === activeProject.nextId) ?? null : null;
+	$: activeProject = selectedProjectId ? projectIndex[selectedProjectId] ?? null : null;
+	$: nextProject = activeProject?.nextId ? projectIndex[activeProject.nextId] ?? null : null;
 
 	/** @param {CustomEvent<{ filter: string }>} event */
 	const handleFilterChange = (event) => {

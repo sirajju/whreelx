@@ -3,7 +3,8 @@
 
 	/**
 	 * @typedef {{ label: string; value: string }} Metric
-	 * @typedef {{ kind?: 'video' | 'image'; url?: string; poster?: string; captions?: string } | null | undefined} ProjectMedia
+	 * @typedef {{ kind?: 'video' | 'image'; url?: string; poster?: string; captions?: string } | null | undefined } ProjectMedia
+	 * @typedef {{ kind: 'video' | 'image' | 'note'; url?: string; poster?: string; captions?: string; title?: string; description?: string }} GalleryAsset
 	 * @typedef {{
 	 * 	id: string;
 	 * 	title: string;
@@ -15,6 +16,7 @@
 	 * 	description: string;
 	 * 	metrics: Metric[];
 	 * 	media?: ProjectMedia;
+	 * 	gallery?: GalleryAsset[];
 	 * }} DisplayProject
 	 */
 
@@ -25,6 +27,17 @@
 
 	const dispatch = createEventDispatcher();
 	$: nextTitle = nextProject?.title ?? 'Explore Portfolio';
+	$: heroMediaKind = project?.media?.kind ?? null;
+	$: heroMediaUrl = project?.media?.url ?? null;
+	/** @type {GalleryAsset[]} */
+	$: galleryAssets =
+		project?.gallery?.filter((asset) => {
+			if (!asset) return false;
+			if (heroMediaUrl && asset.url && asset.kind === heroMediaKind && asset.url === heroMediaUrl) {
+				return false;
+			}
+			return true;
+		}) ?? [];
 </script>
 
 {#if project}
@@ -69,7 +82,7 @@
 									preload="metadata"
 								>
 									<track
-										src={project.media?.captions ?? ''}
+										src={project.media?.captions ?? 'data:text/vtt,WEBVTT'}
 										kind="captions"
 										srclang="en"
 										label="English captions"
@@ -84,23 +97,82 @@
 									class="h-full w-full object-cover"
 								/>
 							{:else}
-								<div class="flex aspect-video items-center justify-center">
+								<div class="flex h-full w-full items-center justify-center">
 									<span class="font-mono text-zinc-600">[Hero Visual Placeholder: {project.title}]</span>
 								</div>
 							{/if}
 						</div>
+
 						<div class="prose prose-invert max-w-none">
 							<h3 class="mb-4 text-2xl font-bold">Project Brief</h3>
 							<p class="text-lg leading-relaxed text-gray-400">{project.description}</p>
 						</div>
-						<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-							<div class="flex aspect-square items-center justify-center rounded-2xl border border-white/5 bg-zinc-900">
-								<span class="font-mono text-xs text-zinc-700">Gallery Asset 1</span>
+
+						{#if galleryAssets.length}
+							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+								{#each galleryAssets as asset}
+									<div class="flex min-h-[240px] flex-col overflow-hidden rounded-2xl border border-white/5 bg-zinc-900">
+										{#if asset.kind === 'video' && asset.url}
+											<video
+												src={asset.url}
+												class="h-full w-full flex-1 bg-black object-cover"
+												controls
+												playsinline
+												preload="metadata"
+											>
+												<track
+													src={asset.captions ?? 'data:text/vtt,WEBVTT'}
+													kind="captions"
+													srclang="en"
+													label="English captions"
+													default
+												/>
+												Sorry, your browser does not support embedded videos. Watch {project.title} instead.
+											</video>
+										{:else if asset.kind === 'image' && asset.url}
+											<img
+												src={asset.url}
+												alt={asset.title ?? `${project.title} gallery asset`}
+												class="h-full w-full flex-1 object-cover"
+											/>
+										{:else if asset.kind === 'note'}
+											<div class="flex flex-1 flex-col justify-center gap-3 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-6 text-center">
+												<i data-lucide="sparkles" class="mx-auto h-6 w-6 text-violet-300" aria-hidden="true"></i>
+												{#if asset.title}
+													<h6 class="text-sm font-semibold uppercase tracking-widest text-zinc-400">{asset.title}</h6>
+												{/if}
+												{#if asset.description}
+													<p class="text-sm text-gray-300">{asset.description}</p>
+												{:else}
+													<p class="text-sm text-gray-300">Behind-the-scenes insight from the shoot.</p>
+												{/if}
+											</div>
+										{:else}
+											<div class="flex flex-1 items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-6 text-center">
+												<span class="text-xs font-semibold uppercase tracking-[0.25em] text-zinc-500">Asset coming soon</span>
+											</div>
+										{/if}
+
+										{#if asset.kind !== 'note' && (asset.title || asset.description)}
+											<div class="border-t border-white/5 px-4 py-3">
+												{#if asset.title}
+													<h6 class="text-sm font-semibold text-white">{asset.title}</h6>
+												{/if}
+												{#if asset.description}
+													<p class="mt-1 text-xs text-gray-400">{asset.description}</p>
+												{/if}
+											</div>
+										{/if}
+									</div>
+								{/each}
 							</div>
-							<div class="flex aspect-square items-center justify-center rounded-2xl border border-white/5 bg-zinc-900">
-								<span class="font-mono text-xs text-zinc-700">Gallery Asset 2</span>
+						{:else}
+							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+								<div class="flex aspect-square items-center justify-center rounded-2xl border border-white/5 bg-zinc-900">
+									<span class="font-mono text-xs text-zinc-700">Gallery asset coming soon</span>
+								</div>
 							</div>
-						</div>
+						{/if}
 					</div>
 
 					<div class="space-y-12">
