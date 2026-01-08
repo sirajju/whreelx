@@ -68,15 +68,13 @@
 									playsinline
 									preload="metadata"
 								>
-									{#if project.media.captions}
-										<track
-											src={project.media.captions}
-											kind="captions"
-											srclang="en"
-											label="English captions"
-											default
-										/>
-									{/if}
+									<track
+										src={project.media?.captions ?? ''}
+										kind="captions"
+										srclang="en"
+										label="English captions"
+										default
+									/>
 									Sorry, your browser does not support embedded videos. Watch {project.title} instead.
 								</video>
 							{:else if project.media?.kind === 'image' && project.media.url}
